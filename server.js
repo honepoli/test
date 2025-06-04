@@ -98,6 +98,14 @@ function auth(req, res, next) {
 }
 
 app.post('/signup', (req, res) => {
+  const authHeader = req.headers['authorization'];
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    const token = authHeader.slice(7);
+    if (sessions.has(token)) {
+      return res.status(400).json({ error: 'Already signed in' });
+    }
+  }
+
   const { userId, passcode, username, profile } = req.body;
   if (!userId || userId.length > 10) {
     return res.status(400).json({ error: 'Invalid userId' });
