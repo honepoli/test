@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Home</title>
+</head>
+<body>
+    <h1>Welcome</h1>
+    <nav>
+        <ul>
+            <li id="signupLink"><a href="/signup.html">Sign Up</a></li>
+            <li><a href="/signin.html">Sign In</a></li>
+            <li><a href="/user.html">User Management</a></li>
+        </ul>
+    </nav>
+    <script>
+        const token = localStorage.getItem('token');
+        if (token) {
+            const signup = document.getElementById('signupLink');
+            if (signup) signup.remove();
+        }
+    </script>
+</body>
+</html>

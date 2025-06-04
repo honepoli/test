@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sign Up</title>
+</head>
+<body>
+    <h1>Sign Up</h1>
+    <form id="signupForm">
+        <label>User ID <input type="text" name="userId" maxlength="10" required></label><br>
+        <label>Passcode <input type="password" name="passcode" pattern="\d{4}" required></label><br>
+        <label>Username <input type="text" name="username" maxlength="20" required></label><br>
+        <label>Profile <input type="text" name="profile"></label><br>
+        <button type="submit">Submit</button>
+    </form>
+    <p id="message"></p>
+    <script>
+    const token = localStorage.getItem('token');
+    if (token) {
+        // Already signed in, don't allow sign up page
+        window.location.href = '/';
+    } else {
+        const form = document.getElementById('signupForm');
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+            const res = await fetch('/signup', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            });
+            const msg = document.getElementById('message');
+            if (res.ok) {
+                msg.textContent = 'Signed up!';
+            } else {
+                const err = await res.json();
+                msg.textContent = err.error || 'Error';
+            }
+        });
+    }
+    </script>
+</body>
+</html>
