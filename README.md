@@ -20,9 +20,14 @@ During development you can use nodemon:
 npm run dev
 ```
 
-The server provides two routes:
+The server provides several routes:
 
 - `GET /items` – fetch all items from the database.
 - `POST /items` – add a new item by providing a JSON body with a `name` field.
+- `POST /signup` – create a new user. Requires `userId`, `passcode`, `username`, and optional `profile` in the request body.
+- `POST /signin` – sign in with `userId` and `passcode`. Returns an authentication token.
+- `POST /logout` – invalidate the current session. Requires `Authorization: Bearer <token>` header.
+- `GET /me` – retrieve the currently signed-in user's info.
+- `PUT /me` – update the signed-in user's `username`, `profile`, or `passcode`.
 
 The database file (`db.sqlite`) is created automatically when the server first runs.

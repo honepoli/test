@@ -1,11 +1,15 @@
 const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
+const crypto = require('crypto');
 
 const app = express();
 const port = process.env.PORT || 3000;
 
 app.use(express.json());
+
+// Simple in-memory session store
+const sessions = new Map();
 
 // Initialize SQLite database (file will be created if it doesn't exist)
 const dbPath = path.join(__dirname, 'db.sqlite');
@@ -16,11 +20,28 @@ const db = new sqlite3.Database(dbPath, (err) => {
 });
 
 db.serialize(() => {
-  db.run('CREATE TABLE IF NOT EXISTS items (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT)', (err) => {
-    if (err) {
-      console.error('Failed to create table', err);
+  db.run(
+    'CREATE TABLE IF NOT EXISTS items (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT)',
+    (err) => {
+      if (err) {
+        console.error('Failed to create table', err);
+      }
     }
-  });
+  );
+
+  db.run(
+    `CREATE TABLE IF NOT EXISTS users (
+      user_id TEXT PRIMARY KEY,
+      passcode TEXT,
+      username TEXT,
+      profile TEXT
+    )`,
+    (err) => {
+      if (err) {
+        console.error('Failed to create users table', err);
+      }
+    }
+  );
 });
 
 app.get('/items', (req, res) => {
@@ -43,6 +64,110 @@ app.post('/items', (req, res) => {
     }
     res.status(201).json({ id: this.lastID, name });
   });
+});
+
+function auth(req, res, next) {
+  const authHeader = req.headers['authorization'];
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  const token = authHeader.slice(7);
+  const userId = sessions.get(token);
+  if (!userId) {
+    return res.status(401).json({ error: 'Invalid token' });
+  }
+  req.userId = userId;
+  next();
+}
+
+app.post('/signup', (req, res) => {
+  const { userId, passcode, username, profile } = req.body;
+  if (!userId || userId.length > 10) {
+    return res.status(400).json({ error: 'Invalid userId' });
+  }
+  if (!/^\d{4}$/.test(passcode)) {
+    return res.status(400).json({ error: 'Passcode must be 4 digits' });
+  }
+  if (!username || username.length > 20) {
+    return res.status(400).json({ error: 'Invalid username' });
+  }
+  db.run(
+    'INSERT INTO users (user_id, passcode, username, profile) VALUES (?, ?, ?, ?)',
+    [userId, passcode, username, profile || ''],
+    function (err) {
+      if (err) {
+        if (err.message.includes('UNIQUE')) {
+          return res.status(400).json({ error: 'User already exists' });
+        }
+        return res.status(500).json({ error: err.message });
+      }
+      res.status(201).json({ userId });
+    }
+  );
+});
+
+app.post('/signin', (req, res) => {
+  const { userId, passcode } = req.body;
+  if (!userId || !passcode) {
+    return res.status(400).json({ error: 'Missing credentials' });
+  }
+  db.get(
+    'SELECT user_id FROM users WHERE user_id = ? AND passcode = ?',
+    [userId, passcode],
+    (err, row) => {
+      if (err) {
+        return res.status(500).json({ error: err.message });
+      }
+      if (!row) {
+        return res.status(401).json({ error: 'Invalid credentials' });
+      }
+      const token = crypto.randomBytes(16).toString('hex');
+      sessions.set(token, userId);
+      res.json({ token });
+    }
+  );
+});
+
+app.post('/logout', auth, (req, res) => {
+  for (const [token, id] of sessions) {
+    if (id === req.userId) {
+      sessions.delete(token);
+    }
+  }
+  res.json({ message: 'Logged out' });
+});
+
+app.get('/me', auth, (req, res) => {
+  db.get(
+    'SELECT user_id as userId, username, profile FROM users WHERE user_id = ?',
+    [req.userId],
+    (err, row) => {
+      if (err) {
+        return res.status(500).json({ error: err.message });
+      }
+      res.json(row);
+    }
+  );
+});
+
+app.put('/me', auth, (req, res) => {
+  const { username, profile, passcode } = req.body;
+  if (username && username.length > 20) {
+    return res.status(400).json({ error: 'Invalid username' });
+  }
+  if (passcode && !/^\d{4}$/.test(passcode)) {
+    return res.status(400).json({ error: 'Passcode must be 4 digits' });
+  }
+  db.run(
+    'UPDATE users SET username = COALESCE(?, username), profile = COALESCE(?, profile), passcode = COALESCE(?, passcode) WHERE user_id = ?',
+    [username, profile, passcode, req.userId],
+    function (err) {
+      if (err) {
+        return res.status(500).json({ error: err.message });
+      }
+      res.json({ message: 'Updated', changes: this.changes });
+    }
+  );
 });
 
 app.listen(port, () => {
