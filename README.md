@@ -30,4 +30,9 @@ The server provides several routes:
 - `GET /me` – retrieve the currently signed-in user's info.
 - `PUT /me` – update the signed-in user's `username`, `profile`, or `passcode`.
 
+The server provides two routes:
+
+- `GET /items` – fetch all items from the database.
+- `POST /items` – add a new item by providing a JSON body with a `name` field.
+
 The database file (`db.sqlite`) is created automatically when the server first runs.
