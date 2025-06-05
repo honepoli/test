@@ -1,73 +1,38 @@
-# 🐱 GitHub README サンプル
+# test
 
-ようこそ〜！このREADMEは、**GitHubで使えるMarkdown記法**をぜ〜んぶ紹介するサンプルだよ🎉  
-自分のプロジェクトに合わせてどんどんカスタムしちゃお💪✨
+## Server Setup
 
----
+This project includes a small Express server backed by SQLite. To run it locally:
 
-## 🔖 目次
+1. Install dependencies:
+   ```sh
+   npm install
+   ```
+2. Start the server:
+   ```sh
+   node server.js
+   ```
+   The server listens on port `3000` by default. You can change the port by setting the `PORT` environment variable.
 
-- [見出し](#見出し)
-- [強調](#強調)
-- [リスト](#リスト)
-- [リンク](#リンク)
-- [画像](#画像)
-- [コード](#コード)
-- [テーブル（表）](#テーブル表)
-- [チェックリスト](#チェックリスト)
-- [引用](#引用)
-- [区切り線](#区切り線)
-- [絵文字](#絵文字)
-- [脚注](#脚注)
-- [HTMLタグ](#htmlタグ)
-- [折りたたみセクション](#折りたたみセクション)
+During development you can use nodemon:
 
----
+```sh
+npm run dev
+```
 
-## 🧠 見出し
+The server provides several routes:
 
-# 見出し1  
-## 見出し2  
-### 見出し3  
-#### 見出し4  
-##### 見出し5  
-###### 見出し6  
+- `GET /items` – fetch all items from the database.
+- `POST /items` – add a new item by providing a JSON body with a `name` field.
+- `POST /signup` – create a new user. Requires `userId`, `passcode`, `username`, and optional `profile` in the request body. The request is rejected if a valid `Authorization` token is provided (i.e. when already signed in).
+- `POST /signin` – sign in with `userId` and `passcode`. Returns an authentication token.
+- `POST /logout` – invalidate the current session. Requires `Authorization: Bearer <token>` header.
+- `GET /me` – retrieve the currently signed-in user's info.
+- `PUT /me` – update the signed-in user's `username`, `profile`, or `passcode`.
 
----
+The server provides two routes:
 
-## ✨ 強調
+- `GET /items` – fetch all items from the database.
+- `POST /items` – add a new item by providing a JSON body with a `name` field.
 
-- **太字**：`**太字**`  
-- *斜体*：`*斜体*`  
-- ~~取り消し線~~：`~~取り消し線~~`  
-- ***太字+斜体***：`***太字+斜体***`
-
----
-
-## 📚 リスト
-
-### ● 番号なしリスト
-
-- 🍓 いちご  
-  - 🫐 ぶるーべりー  
-    - 🍒 さくらんぼ
-
-### ● 番号付きリスト
-
-1. 起きる  
-2. 顔を洗う  
-3. 朝ごはんを食べる  
-
----
-
-## 🔗 リンク
-
-- 外部リンク：[Google](https://www.google.com)  
-- 同じリポジトリのファイルへのリンク：[LICENSE](LICENSE)
-
----
-
-## 🖼️ 画像
-
-```md
-![かわいい猫](https://placekitten.com/300/200)
+The database file (`db.sqlite`) is created automatically when the server first runs.
