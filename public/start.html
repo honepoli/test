@@ -5,7 +5,9 @@
     <title>Start</title>
     <style>
         body { margin: 0; font-family: Arial, sans-serif; }
-        header { background: #333; color: #fff; padding: 10px; }
+        header { background: #333; color: #fff; padding: 10px; display:flex; align-items:center; justify-content:space-between; }
+        header a, header button { margin-left: 10px; background:#555; color:#fff; border:none; padding:5px 10px; text-decoration:none; cursor:pointer; }
+        header a:hover, header button:hover { background:#777; }
         #container { display: flex; height: 100vh; }
         aside { width: 200px; background: #f2f2f2; padding: 10px; box-sizing: border-box; }
         main { flex: 1; padding: 10px; box-sizing: border-box; }
@@ -17,6 +19,10 @@
 <body>
     <header>
         <h1>Start Screen</h1>
+        <nav>
+            <a id="userMgmt" href="/user.html">User Management</a>
+            <button id="logoutBtn">Logout</button>
+        </nav>
     </header>
     <div id="container">
         <aside>
@@ -43,6 +49,14 @@
         }
         const tasks = document.getElementById('tasks');
         const gantt = document.getElementById('gantt');
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            await fetch('/logout', {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            localStorage.removeItem('token');
+            window.location.href = '/';
+        });
         function show(section) {
             tasks.style.display = 'none';
             gantt.style.display = 'none';
