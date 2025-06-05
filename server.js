@@ -6,22 +6,54 @@ const crypto = require('crypto');
 const app = express();
 const port = process.env.PORT || 3000;
 
+function parseCookies(req) {
+  const header = req.headers['cookie'];
+  const out = {};
+  if (header) {
+    for (const part of header.split(';')) {
+      const [k, v] = part.trim().split('=');
+      out[k] = decodeURIComponent(v);
+    }
+  }
+  return out;
+}
+
+function getUserIdFromReq(req) {
+  const token = parseCookies(req).token;
+  if (token && sessions.has(token)) {
+    return sessions.get(token);
+  }
+  return null;
+}
+
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/', (req, res) => {
+  if (getUserIdFromReq(req)) {
+    return res.redirect('/start.html');
+  }
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 app.get('/signup', (req, res) => {
+  if (getUserIdFromReq(req)) {
+    return res.redirect('/start.html');
+  }
   res.sendFile(path.join(__dirname, 'public', 'signup.html'));
 });
 
 app.get('/signin', (req, res) => {
+  if (getUserIdFromReq(req)) {
+    return res.redirect('/start.html');
+  }
   res.sendFile(path.join(__dirname, 'public', 'signin.html'));
 });
 
 app.get('/user', (req, res) => {
+  if (!getUserIdFromReq(req)) {
+    return res.redirect('/signin.html');
+  }
   res.sendFile(path.join(__dirname, 'public', 'user.html'));
 });
 
@@ -84,26 +116,22 @@ app.post('/items', (req, res) => {
 });
 
 function auth(req, res, next) {
-  const authHeader = req.headers['authorization'];
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+  const token = parseCookies(req).token;
+  if (!token) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
-  const token = authHeader.slice(7);
   const userId = sessions.get(token);
   if (!userId) {
     return res.status(401).json({ error: 'Invalid token' });
   }
   req.userId = userId;
+  req.token = token;
   next();
 }
 
 app.post('/signup', (req, res) => {
-  const authHeader = req.headers['authorization'];
-  if (authHeader && authHeader.startsWith('Bearer ')) {
-    const token = authHeader.slice(7);
-    if (sessions.has(token)) {
-      return res.status(400).json({ error: 'Already signed in' });
-    }
+  if (getUserIdFromReq(req)) {
+    return res.status(400).json({ error: 'Already signed in' });
   }
 
   const { userId, passcode, username, profile } = req.body;
@@ -148,7 +176,8 @@ app.post('/signin', (req, res) => {
       }
       const token = crypto.randomBytes(16).toString('hex');
       sessions.set(token, userId);
-      res.json({ token });
+      res.setHeader('Set-Cookie', `token=${token}; HttpOnly`);
+      res.json({ message: 'Signed in' });
     }
   );
 });
@@ -159,6 +188,7 @@ app.post('/logout', auth, (req, res) => {
       sessions.delete(token);
     }
   }
+  res.setHeader('Set-Cookie', 'token=; Max-Age=0');
   res.json({ message: 'Logged out' });
 });
 

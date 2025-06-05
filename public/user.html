@@ -15,28 +15,27 @@
     </form>
     <p id="message"></p>
     <script>
-    const token = localStorage.getItem('token');
-    if (!token) {
-        // Redirect unauthenticated users to sign-in page
-        window.location.href = '/signin.html';
-    } else {
+    (async () => {
         const form = document.getElementById('updateForm');
-        fetch('/me', {headers: {'Authorization': 'Bearer ' + token}})
-            .then(res => res.json())
-            .then(user => {
-                const div = document.getElementById('userInfo');
-                div.textContent = `User ID: ${user.userId}`;
-                if (user.username) form.username.value = user.username;
-                if (user.profile) form.profile.value = user.profile;
-            });
-        
+        const meRes = await fetch('/me', { credentials: 'include' });
+        if (!meRes.ok) {
+            window.location.href = '/signin.html';
+            return;
+        }
+        const user = await meRes.json();
+        const div = document.getElementById('userInfo');
+        div.textContent = `User ID: ${user.userId}`;
+        if (user.username) form.username.value = user.username;
+        if (user.profile) form.profile.value = user.profile;
+
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             const data = Object.fromEntries(new FormData(form).entries());
             const res = await fetch('/me', {
                 method: 'PUT',
-                headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token},
-                body: JSON.stringify(data)
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data),
+                credentials: 'include'
             });
             const msg = document.getElementById('message');
             if (res.ok) {
@@ -46,7 +45,7 @@
                 msg.textContent = err.error || 'Error';
             }
         });
-    }
+    })();
     </script>
 </body>
 </html>

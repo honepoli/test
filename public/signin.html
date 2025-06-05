@@ -21,12 +21,11 @@
         const res = await fetch('/signin', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(data)
+            body: JSON.stringify(data),
+            credentials: 'include'
         });
         const msg = document.getElementById('message');
         if (res.ok) {
-            const j = await res.json();
-            localStorage.setItem('token', j.token);
             window.location.href = '/start.html';
         } else {
             const err = await res.json();
