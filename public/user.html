@@ -20,13 +20,16 @@
         // Redirect unauthenticated users to sign-in page
         window.location.href = '/signin.html';
     } else {
+        const form = document.getElementById('updateForm');
         fetch('/me', {headers: {'Authorization': 'Bearer ' + token}})
             .then(res => res.json())
             .then(user => {
                 const div = document.getElementById('userInfo');
-                div.textContent = `User ID: ${user.userId}, Username: ${user.username}`;
+                div.textContent = `User ID: ${user.userId}`;
+                if (user.username) form.username.value = user.username;
+                if (user.profile) form.profile.value = user.profile;
             });
-        const form = document.getElementById('updateForm');
+        
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             const data = Object.fromEntries(new FormData(form).entries());
