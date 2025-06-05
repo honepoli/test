@@ -16,8 +16,7 @@
     <script>
         const token = localStorage.getItem('token');
         if (token) {
-            const signup = document.getElementById('signupLink');
-            if (signup) signup.remove();
+            window.location.href = '/start.html';
         }
     </script>
 </body>
