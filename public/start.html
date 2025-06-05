@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Start</title>
+    <style>
+        body { margin: 0; font-family: Arial, sans-serif; }
+        header { background: #333; color: #fff; padding: 10px; }
+        #container { display: flex; height: 100vh; }
+        aside { width: 200px; background: #f2f2f2; padding: 10px; box-sizing: border-box; }
+        main { flex: 1; padding: 10px; box-sizing: border-box; }
+        ul { list-style: none; padding: 0; }
+        li { margin: 5px 0; }
+        a { text-decoration: none; color: #333; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Start Screen</h1>
+    </header>
+    <div id="container">
+        <aside>
+            <ul>
+                <li><a id="menuTasks">Task List</a></li>
+                <li><a id="menuGantt">Gantt Chart</a></li>
+            </ul>
+        </aside>
+        <main>
+            <div id="tasks" style="display:none;">
+                <h2>Task List</h2>
+                <p>This is the task list screen.</p>
+            </div>
+            <div id="gantt" style="display:none;">
+                <h2>Gantt Chart</h2>
+                <p>This is the Gantt chart screen.</p>
+            </div>
+        </main>
+    </div>
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = '/signin.html';
+        }
+        const tasks = document.getElementById('tasks');
+        const gantt = document.getElementById('gantt');
+        function show(section) {
+            tasks.style.display = 'none';
+            gantt.style.display = 'none';
+            section.style.display = 'block';
+        }
+        document.getElementById('menuTasks').addEventListener('click', () => show(tasks));
+        document.getElementById('menuGantt').addEventListener('click', () => show(gantt));
+        // Show task list by default
+        show(tasks);
+    </script>
+</body>
+</html>
