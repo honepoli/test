@@ -27,7 +27,7 @@
         if (res.ok) {
             const j = await res.json();
             localStorage.setItem('token', j.token);
-            msg.textContent = 'Signed in!';
+            window.location.href = '/start.html';
         } else {
             const err = await res.json();
             msg.textContent = err.error || 'Error';
