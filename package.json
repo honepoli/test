@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "ようこそ〜！このREADMEは、**GitHubで使えるMarkdown記法**をぜ〜んぶ紹介するサンプルだよ🎉   自分のプロジェクトに合わせてどんどんカスタムしちゃお💪✨",
   "main": "server.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/honepoli/test.git"
+  },
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
