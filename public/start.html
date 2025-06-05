@@ -43,18 +43,19 @@
         </main>
     </div>
     <script>
-        const token = localStorage.getItem('token');
-        if (!token) {
+        (async () => {
+        const meRes = await fetch('/me', { credentials: 'include' });
+        if (!meRes.ok) {
             window.location.href = '/signin.html';
+            return;
         }
         const tasks = document.getElementById('tasks');
         const gantt = document.getElementById('gantt');
         document.getElementById('logoutBtn').addEventListener('click', async () => {
             await fetch('/logout', {
                 method: 'POST',
-                headers: { 'Authorization': 'Bearer ' + token }
+                credentials: 'include'
             });
-            localStorage.removeItem('token');
             window.location.href = '/';
         });
         function show(section) {
@@ -66,6 +67,7 @@
         document.getElementById('menuGantt').addEventListener('click', () => show(gantt));
         // Show task list by default
         show(tasks);
+        })();
     </script>
 </body>
 </html>

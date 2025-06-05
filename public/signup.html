@@ -15,31 +15,26 @@
     </form>
     <p id="message"></p>
     <script>
-    const token = localStorage.getItem('token');
-    if (token) {
-        // Already signed in, don't allow sign up page
-        window.location.href = '/';
-    } else {
-        const form = document.getElementById('signupForm');
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const formData = new FormData(form);
-            const data = Object.fromEntries(formData.entries());
-            const res = await fetch('/signup', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(data)
-            });
-            const msg = document.getElementById('message');
-            if (res.ok) {
-                msg.textContent = 'Signed up!';
-                window.location.href = '/';
-            } else {
-                const err = await res.json();
-                msg.textContent = err.error || 'Error';
-            }
+    const form = document.getElementById('signupForm');
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+        const res = await fetch('/signup', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data),
+            credentials: 'include'
         });
-    }
+        const msg = document.getElementById('message');
+        if (res.ok) {
+            msg.textContent = 'Signed up!';
+            window.location.href = '/';
+        } else {
+            const err = await res.json();
+            msg.textContent = err.error || 'Error';
+        }
+    });
     </script>
 </body>
 </html>
